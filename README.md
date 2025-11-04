@@ -1,2 +1,121 @@
-# Problema-del-mono
-Hands-on 4: Monkey &amp; Banana
+(deftemplate state
+  (slot mono-pos)
+  (slot mono-nivel)
+  (slot caja-pos)
+  (slot banana-pos)
+  (slot tiene)
+)
+
+(deftemplate posicion (slot lugar))
+
+(deffacts inicio
+  (state (mono-pos puerta)
+         (mono-nivel suelo)
+         (caja-pos ventana)
+         (banana-pos centro)
+         (tiene no))
+  (posicion (lugar puerta))
+  (posicion (lugar centro))
+  (posicion (lugar ventana))
+)
+
+(defrule caminar-a-caja
+  ?f <- (state (mono-pos ?m)
+               (mono-nivel suelo)
+               (caja-pos ?c)
+               (banana-pos ?b)
+               (tiene no))
+  (test (neq ?m ?c))
+  =>
+  (retract ?f)
+  (assert (state (mono-pos ?c)
+                 (mono-nivel suelo)
+                 (caja-pos ?c)
+                 (banana-pos ?b)
+                 (tiene no)))
+  (printout t "El mono camina desde " ?m " hacia la caja en " ?c "." crlf)
+)
+
+(defrule empujar-caja-al-centro
+  ?f <- (state (mono-pos ?m)
+               (mono-nivel suelo)
+               (caja-pos ?c)
+               (banana-pos centro)
+               (tiene no))
+  (test (neq ?c centro))
+  =>
+  (retract ?f)
+  (assert (state (mono-pos centro)
+                 (mono-nivel suelo)
+                 (caja-pos centro)
+                 (banana-pos centro)
+                 (tiene no)))
+  (printout t "El mono empuja la caja hacia el centro (debajo de la banana)." crlf)
+)
+
+(defrule subir-a-la-caja
+  ?f <- (state (mono-pos centro)
+               (mono-nivel suelo)
+               (caja-pos centro)
+               (banana-pos centro)
+               (tiene no))
+  =>
+  (retract ?f)
+  (assert (state (mono-pos centro)
+                 (mono-nivel caja)
+                 (caja-pos centro)
+                 (banana-pos centro)
+                 (tiene no)))
+  (printout t "El mono se sube a la caja." crlf)
+)
+
+(defrule tomar-banana
+  ?f <- (state (mono-pos centro)
+               (mono-nivel caja)
+               (caja-pos centro)
+               (banana-pos centro)
+               (tiene no))
+  =>
+  (retract ?f)
+  (assert (state (mono-pos centro)
+                 (mono-nivel caja)
+                 (caja-pos centro)
+                 (banana-pos centro)
+                 (tiene si)))
+  (printout t "El mono toma la banana." crlf)
+  (printout t "*** ¡PROBLEMA RESUELTO! ***" crlf)
+)
+
+(defrule comer-banana
+  ?f <- (state (mono-pos ?p)
+               (mono-nivel ?n)
+               (caja-pos ?c)
+               (banana-pos ?b)
+               (tiene si))
+  =>
+  (retract ?f)
+  (assert (state (mono-pos ?p)
+                 (mono-nivel ?n)
+                 (caja-pos ?c)
+                 (banana-pos ?b)
+                 (tiene comida)))
+  (printout t "El mono se come la banana. ¡Ñam ñam!" crlf)
+)
+
+(defrule mostrar-estado-final
+  (state (mono-pos ?p)
+         (mono-nivel ?n)
+         (caja-pos ?c)
+         (banana-pos ?b)
+         (tiene comida))
+  =>
+  (printout t crlf "---------------------------------" crlf)
+  (printout t "ESTADO FINAL:" crlf)
+  (printout t "  Posición del mono: " ?p crlf)
+  (printout t "  Nivel del mono: " ?n crlf)
+  (printout t "  Posición de la caja: " ?c crlf)
+  (printout t "  Posición de la banana: " ?b crlf)
+  (printout t "  Resultado: Se comió la banana 🍌😋" crlf)
+  (printout t "---------------------------------" crlf)
+)
+
